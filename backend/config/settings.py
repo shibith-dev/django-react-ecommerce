@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'corsheaders',
+    'accounts'
 ]
 
 MIDDLEWARE = [
@@ -135,4 +136,5 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 
+AUTH_USER_MODEL = 'accounts.User'
 
