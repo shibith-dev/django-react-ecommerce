@@ -7,6 +7,11 @@ import './App.css'
 function App() {
   const [count, setCount] = useState(0)
 
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  console.log(token);
+
   return (
     <>
       <section id="center">

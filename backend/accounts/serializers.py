@@ -3,6 +3,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 
+from django.contrib.auth.tokens import default_token_generator
+from django.core import signing
+
+from .tasks import VERIFICATION_MAX_AGE, VERIFICATION_SALT
+
 User = get_user_model()
 
 
@@ -91,6 +96,75 @@ class ChangePasswordSerializer(serializers.Serializer):
         validate_password(data["new_password"],user=user)
 
         return data
+
+class VerificationEmailSerializer(serializers.Serializer):
+    token = serializers.CharField(write_only=True)
+
+    def validate_token(self, value):
+        try:
+            payload=signing.loads(
+                value,
+                salt=VERIFICATION_SALT,
+                max_age=VERIFICATION_MAX_AGE
+            )
+        except signing.SignatureExpired:
+            raise serializers.ValidationError("This verification link has expired. Request a new one.")
+
+        except signing.BadSignature:
+            raise serializers.ValidationError("Invalid verification link.")
+
+        try:
+            user = User.objects.get(id=payload["user_id"], email=payload["email"])
+        except Exception:
+            raise serializers.ValidationError("Invalid verification link.")
+
+        if not user.is_active:
+            raise serializers.ValidationError("Invalid verification link.")
+
+        self.user = user
+        return value
+
+    
+
+class ResendVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    confirm_new_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        if data["new_password"] != data["confirm_new_password"]:
+            raise serializers.ValidationError("Password do not match")
+
+        try:
+            user = User.objects.get(id=data['uid'])
+        except Exception:
+            raise serializers.ValidationError({"token": "Invalid or expired reset link."})
+        
+        if not user.is_active:
+            raise serializers.ValidationError({
+                "token": "Invalid or expired reset link."
+            })
+
+        if not default_token_generator.check_token(user, data["token"]):
+            raise serializers.ValidationError({
+                "token": "Invalid or expired reset link."
+            })
+
+        validate_password(data["new_password"], user=user)
+
+        data["user"] = user
+        return data        
+
+
 
 
 
