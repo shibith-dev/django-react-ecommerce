@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from decimal import Decimal
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'django_filters',
     'apps.catalog',
     'apps.cart',
+    'apps.orders',
 ]
 
 MIDDLEWARE = [
@@ -196,3 +198,5 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+ORDER_SHIPPING_COST = Decimal(os.getenv("ORDER_SHIPPING_COST", "0.00"))
