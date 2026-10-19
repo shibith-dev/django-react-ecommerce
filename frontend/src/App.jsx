@@ -3,6 +3,7 @@ import HomePage from './pages/HomePage'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import NotFoundPage from './pages/NotFoundPage'
 import MainLayout from './layouts/MainLayout'
+import ProductPage from './pages/ProductPage'
 
 function PlaceholderPage({ title }) {
   return (
@@ -20,7 +21,7 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path='/' element={<HomePage />} />
-          <Route path='/products' element={<PlaceholderPage title="Explore watches" />} />
+          <Route path='/products' element={<ProductPage/>} />
           <Route path='/login' element={<PlaceholderPage title="Sign in" />} />
           <Route path='/register' element={<PlaceholderPage title="Create your account" />} />
           <Route path='/cart' element={<PlaceholderPage title="Your shopping cart" />} />
