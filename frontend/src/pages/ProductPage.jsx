@@ -91,7 +91,10 @@ const ProductPage = () => {
             setLoading(true)
             setError("")
 
-            if (Number(filters.min_price) < 0 || isNaN(Number(filters.min_price))) {
+            const min_price = filters.min_price === "" ? null : Number(filters.min_price)
+            const max_price = filters.max_price === "" ? null : Number(filters.max_price)
+
+            if (min_price < 0 || isNaN(min_price)) {
                 setError("Minimum price cannot be negative.")
                 setProducts([])
                 setCount(0)
@@ -101,7 +104,7 @@ const ProductPage = () => {
                 return
             }
 
-            if (Number(filters.max_price) < 0 || isNaN(Number(filters.max_price))) {
+            if (max_price < 0 || isNaN(max_price)) {
                 setError("Maximum price cannot be negative.")
                 setProducts([])
                 setCount(0)
@@ -111,7 +114,7 @@ const ProductPage = () => {
                 return
             }
 
-            if (Number(filters.min_price) > Number(filters.max_price)) {
+            if (min_price !== null && max_price !== null && min_price > max_price) {
                 setError("Minimum price cannot exceed maximum price.")
                 setProducts([]);
                 setCount(0);
@@ -253,8 +256,7 @@ const ProductPage = () => {
                     )}
 
                     {loading && (
-                        <div
-                            className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                             {Array.from({ length: 6 }, (_, index) => (
                                 <div key={index} className="animate-pulse">
                                     <div className="aspect-[4/5] bg-stone-200" />
@@ -268,17 +270,9 @@ const ProductPage = () => {
 
                     {!loading && !error && products.length === 0 && (
                         <div className="border border-stone-200 px-6 py-16 text-center">
-                            <h2 className="text-xl font-medium">
-                                No watches found
-                            </h2>
-                            <p className="mt-3 text-sm text-stone-500">
-                                Try another search or clear your filters.
-                            </p>
-                            <button
-                                type="button"
-                                onClick={resetFilters}
-                                className="mt-6 border border-stone-300 px-5 py-3 text-sm hover:border-stone-700"
-                            >
+                            <h2 className="text-xl font-medium">No watches found</h2>
+                            <p className="mt-3 text-sm text-stone-500">Try another search or clear your filters.</p>
+                            <button type="button" onClick={resetFilters} className="mt-6 border border-stone-300 px-5 py-3 text-sm hover:border-stone-700">
                                 Clear filters
                             </button>
                         </div>
@@ -287,10 +281,7 @@ const ProductPage = () => {
                     {!loading && !error && products.length > 0 && (
                         <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
                             {products.map((product) => (
-                                <ProductCard
-                                    key={product.id}
-                                    product={product}
-                                />
+                                <ProductCard key={product.id} product={product}/>
                             ))}
                         </div>
                     )}

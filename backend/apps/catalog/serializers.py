@@ -42,4 +42,4 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     class Meta:
         model = Product
-        fields = ("id", "name", "slug", "sku", "description", "brand", "category", "price", "stock", "watch_type", "movement_type", "strap_material", "dial_color", "dial_color", "case_color", "strap_color", "case_diameter_mm", "water_resistance_m", "images", "created_at", "updated_at")
+        fields = ("id", "name", "slug", "sku", "description", "brand", "category", "price", "stock", "is_active", "watch_type", "movement_type", "strap_material", "dial_color", "dial_color", "case_color", "strap_color", "case_diameter_mm", "water_resistance_m", "images", "created_at", "updated_at")
