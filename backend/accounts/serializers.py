@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
@@ -46,37 +48,30 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "email", "email_verified")
 
 
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
+class LoginSerializer(TokenObtainPairSerializer):
+    username_field = "email"
 
     def validate(self, data):
-        email = data['email'].strip().lower()
-        password = data['password']
+        email = data.get("email", "").lower().strip()
+        password = data.get("password")
 
-        user = authenticate(
-            request=self.context.get("request"),
-            email=email, 
-            password=password
-        )
+        user = authenticate(request=self.context.get("request"), email=email, password=password)
 
         if user is None:
-            raise serializers.ValidationError(
-                "Invalid email or password."
-            )
-        
+            raise serializers.ValidationError({"detail": "Invalid email or password"})
+
         if not user.is_active:
-            raise serializers.ValidationError(
-                "This account is inactive."
-            )
+            raise serializers.ValidationError({"detail": "This account is inactive."})
+
         if not user.email_verified:
-            raise serializers.ValidationError(
-                "Please verify your email before logging in."
-            )
-        
-        data["user"] = user
+            raise serializers.ValidationError({"detail": "Please verify your email before logging in."})
+
+        data = super().validate(data)
+
+        data["user"] = UserSerializer(self.user, context=self.context).data
 
         return data
+
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -163,17 +158,3 @@ class ResetPasswordSerializer(serializers.Serializer):
 
         data["user"] = user
         return data        
-
-
-
-
-
-'''
-{
-  "email": "john@gmail.com",
-  "password": "Shibith1234",
-  "confirm_password": "Shibith1234",
-  "first_name": "John",
-  "last_name": "Doe"
-}
-'''

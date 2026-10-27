@@ -139,10 +139,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
-
 AUTH_USER_MODEL = 'accounts.User'
 
 REST_FRAMEWORK = {
@@ -159,7 +155,7 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,               
     "BLACKLIST_AFTER_ROTATION": True,
@@ -200,3 +196,19 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 ORDER_SHIPPING_COST = Decimal(os.getenv("ORDER_SHIPPING_COST", "0.00"))
+
+CORS_ALLOWED_ORIGINS = [FRONTEND_URL,]
+
+CORS_ALLOW_CREDENTIALS = True # Allows the browser to include cookies in cross origin requests
+
+CSRF_TRUSTED_ORIGINS = [FRONTEND_URL,] # tells django which frontend origin is trusted to make CSRF protected requests.
+
+CSRF_COOKIE_HTTPONLY = False # allows the frontend to read the CSRF token cookie so it can send the CSRF header. This is not the refresh token cookie.
+CSRF_COOKIE_SECURE = not DEBUG # is enabled outside debug mode, so cookies are only sent over HTTPS in production.
+CSRF_COOKIE_SAMESITE = "Lax" # provides a useful default when the frontend and backend are deployed on the same site. Cross-site deployments may need a different cookie policy and additional CSRF considerations
+
+AUTH_REFRESH_COOKIE_NAME = "chrono_refresh"
+AUTH_REFRESH_COOKIE_HTTPONLY = True # prevents JavaScript from reading the refresh token.
+AUTH_REFRESH_COOKIE_SECURE = not DEBUG
+AUTH_REFRESH_COOKIE_SAMESITE = "Lax"
+AUTH_REFRESH_COOKIE_PATH = "/api/v1/auth/" # limits the refresh cookie to the authentication API path rather than sending it with every request.

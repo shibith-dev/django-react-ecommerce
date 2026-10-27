@@ -5,6 +5,10 @@ import NotFoundPage from './pages/NotFoundPage'
 import MainLayout from './layouts/MainLayout'
 import ProductPage from './pages/ProductPage'
 import ProductDetailPage from './pages/ProductDetailPage'
+import LoginPage from './pages/LoginPage'
+import { AuthProvider } from './context/AuthContext'
+import RegisterPage from './pages/RegisterPage'
+import VerifyEmailPage from './pages/VerifyEmailPage'
 
 function PlaceholderPage({ title }) {
   return (
@@ -19,19 +23,22 @@ function PlaceholderPage({ title }) {
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path='/' element={<HomePage />} />
-          <Route path='/products' element={<ProductPage/>} />
-          <Route path='/products/:slug' element={<ProductDetailPage />} />
-          <Route path='/login' element={<PlaceholderPage title="Sign in" />} />
-          <Route path='/register' element={<PlaceholderPage title="Create your account" />} />
-          <Route path='/cart' element={<PlaceholderPage title="Your shopping cart" />} />
-          <Route path='/checkout' element={<PlaceholderPage title="checkout" />} />
-          <Route path='/orders' element={<PlaceholderPage title="Your orders" />} />
-          <Route path='*' element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route element={<MainLayout />}>
+            <Route path='/' element={<HomePage />} />
+            <Route path='/products' element={<ProductPage />} />
+            <Route path='/products/:slug' element={<ProductDetailPage />} />
+            <Route path='/login' element={<LoginPage />} />
+            <Route path='/register' element={<RegisterPage />} />
+            <Route path='/verify-email' element={<VerifyEmailPage />} />
+            <Route path='/cart' element={<PlaceholderPage title="Your shopping cart" />} />
+            <Route path='/checkout' element={<PlaceholderPage title="checkout" />} />
+            <Route path='/orders' element={<PlaceholderPage title="Your orders" />} />
+            <Route path='*' element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

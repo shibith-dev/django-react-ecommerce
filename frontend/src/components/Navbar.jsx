@@ -1,12 +1,24 @@
 import React from 'react'
-import { Link, NavLink } from "react-router-dom";
-import { Search, ShoppingBag, UserRound } from "lucide-react";
+import { Link, NavLink, replace, useNavigate } from "react-router-dom";
+import { LogOut, Search, ShoppingBag, UserRound } from "lucide-react";
+
+import { useAuth } from '../context/AuthContext';
 
 const navigationLinkClass = ({ isActive }) => {
     `transition-colors hover:text-black ${isActive ? "text-black" : "text-stone-500"}`
 }
 
 const Navbar = () => {
+    const { isAuthenticated, authLoading, logout } = useAuth()
+    const navigate = useNavigate()
+
+    async function handleLogout(params) {
+        try {
+            await logout()
+        } finally {
+            navigate("/", { replace: true })
+        }
+    }
     return (
         <header className='sticky top-0 z-50 border-b border-stone-200 bg-[#faf9f6]/95 backdrop-blur'>
             <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
@@ -17,7 +29,14 @@ const Navbar = () => {
                 </nav>
                 <div className='flex items-center gap-4'>
                     <Link to="/products" className='text-stone-600 transition-colors hover:text-black'><Search size={19} strokeWidth={1.7} /></Link>
-                    <Link to="/login" className='text-stone-600 transition-colors hover:text-black'><UserRound size={19} strokeWidth={1.7} /></Link>
+                    {!authLoading && isAuthenticated ? (
+                        <>
+                            <Link to="/account" title="My account" className="text-stone-600 transition-colors hover:text-black"><UserRound size={19} strokeWidth={1.7} /></Link>
+                            <button type="button" onClick={handleLogout} title="Sign out" className="text-stone-600 transition-colors hover:text-black">
+                                <LogOut size={19} strokeWidth={1.7} />
+                            </button>
+                        </>
+                    ) : (<Link to="/login" className='text-stone-600 transition-colors hover:text-black'><UserRound size={19} strokeWidth={1.7} /></Link>)}
                     <Link to="/cart" className='text-stone-600 transition-colors hover:text-black'><ShoppingBag size={19} strokeWidth={1.7} /></Link>
                 </div>
             </div>

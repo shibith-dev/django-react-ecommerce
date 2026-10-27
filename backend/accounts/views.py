@@ -1,13 +1,23 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework import generics
+from rest_framework.decorators import api_view, permission_classes
+
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_protect
+
+from django.conf import settings
 
 from .serializers import RegisterationSerializer, LoginSerializer, UserSerializer, ChangePasswordSerializer, VerificationEmailSerializer, ResendVerificationSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
 from .tokens import get_tokens_for_user
@@ -16,7 +26,26 @@ from .tasks import send_verification_email, send_password_reset_email
 
 User = get_user_model()
 
+
+def set_fresh_cookie(response, token):
+    response.set_cookie(
+        key = settings.AUTH_REFRESH_COOKIE_NAME,
+        value=token,
+        max_age = int(settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()),
+        httponly = settings.AUTH_REFRESH_COOKIE_HTTPONLY,
+        secure=settings.AUTH_REFRESH_COOKIE_SECURE,
+        samesite=settings.AUTH_REFRESH_COOKIE_SAMESITE,
+        path=settings.AUTH_REFRESH_COOKIE_PATH
+    )
+
 # Create your views here.
+
+@ensure_csrf_cookie # Its primary job is to force Django to send the csrf token.
+@require_GET # Restricts other HTTP requests other than GET.
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def csrf_cookie_view(request):
+    return Response({"detail": "CSRF cookie set"})
 
 
 class RegisterUserView(APIView):
@@ -42,34 +71,77 @@ class RegisterUserView(APIView):
         )
 
 
-class LoginUserView(APIView):
+class LoginUserView(TokenObtainPairView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = LoginSerializer
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+
+        if response.status_code == status.HTTP_200_OK:
+            refresh_token = response.data.pop("refresh", None)
+            if refresh_token:
+                set_fresh_cookie(response, refresh_token)
+
+        return response
+
+
+class CookieTokenRefreshView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @method_decorator(csrf_protect)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request):
-        serializer = LoginSerializer(data=request.data, context={"request": request})
+        refresh_token = request.COOKIES.get(settings.AUTH_REFRESH_COOKIE_NAME)
+
+        if not refresh_token:
+            return Response({"detail": "Refresh token is missing."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = TokenRefreshSerializer(data={"refresh": refresh_token})
         serializer.is_valid(raise_exception=True)
-        user_data = serializer.validated_data["user"]
-        tokens = get_tokens_for_user(user_data)
-        return Response(
-            {**tokens, "user": UserSerializer(user_data).data},
-            status=status.HTTP_200_OK,
-        )
+        data = dict(serializer.validated_data)
+        rotated_refresh = data.pop("refresh", None)
+
+        response = Response(data, status=status.HTTP_200_OK)
+
+        if rotated_refresh:
+            set_fresh_cookie(response, rotated_refresh)
+
+        return response
+    
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+    
     def post(self, request):
-        refresh_token = request.data.get("refresh")
+        refresh_token = request.COOKIES.get(settings.AUTH_REFRESH_COOKIE_NAME)
 
-        if not refresh_token:
-            return Response({"details": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if refresh_token:
+            try:
+                RefreshToken(refresh_token).blacklist()
+            except (TokenError, InvalidToken):
+                # The token may already be invalid or expired.
+                pass
 
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-        except TokenError:
-            return Response({"detail": "Invalid refresh token."}, status=status.HTTP_400_BAD_REQUEST)
+        response = Response(status=status.HTTP_204_NO_CONTENT)
+        response.delete_cookie(
+            key=settings.AUTH_REFRESH_COOKIE_NAME,
+            path=settings.AUTH_REFRESH_COOKIE_PATH,
+            samesite=settings.AUTH_REFRESH_COOKIE_SAMESITE,
+        )
 
-        return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+        return response
+
 
 class ChangePassword(APIView):
     permission_classes = [permissions.IsAuthenticated]
