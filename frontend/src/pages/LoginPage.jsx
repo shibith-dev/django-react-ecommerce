@@ -19,7 +19,8 @@ const LoginPage = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
-    
+
+    const infoMessage = location.state?.message
 
     async function handleSubmit(event) {
         event.preventDefault()
@@ -27,9 +28,9 @@ const LoginPage = () => {
         setError("")
 
         try {
-            await login({email, password})
+            await login({ email, password })
             const destination = location.state?.from || "/"
-            navigate(destination, {replace: true})
+            navigate(destination, { replace: true })
         } catch (error) {
             setError(error.response?.data?.detail || "Unable to sign in. Please check your credentials and try again.")
         } finally {
@@ -39,6 +40,9 @@ const LoginPage = () => {
 
     return (
         <AuthPageLayout title="Welcome back" description="Sign in to access your account and orders.">
+            {infoMessage && (
+                <p role="status" className="text-sm text-green-700">{infoMessage}</p>
+            )}
             <form onSubmit={handleSubmit} className="space-y-5">
                 {error && (
                     <p
@@ -50,11 +54,11 @@ const LoginPage = () => {
                 )}
 
                 <label className="block text-sm font-medium">Email address
-                    <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} placeholder="you@example.com"/>
+                    <input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} placeholder="you@example.com" />
                 </label>
 
                 <label className="block text-sm font-medium">Password
-                    <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} placeholder="Enter your password"/>
+                    <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} placeholder="Enter your password" />
                 </label>
                 <div className="flex justify-end">
                     <Link to="/forgot-password" className="text-sm text-stone-600 underline hover:text-black">
