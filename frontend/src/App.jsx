@@ -14,6 +14,8 @@ import ChangePasswordPage from './pages/ChangePasswordPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import PasswordRestPage from './pages/PasswordResetPage'
 import ProtectedRoute from './components/ProtectedRoute'
+import { CartProvider } from './context/cartContext'
+import CartPage from './pages/CartPage'
 
 function PlaceholderPage({ title }) {
   return (
@@ -29,26 +31,28 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path='/' element={<HomePage />} />
-            <Route path='/products' element={<ProductPage />} />
-            <Route path='/products/:slug' element={<ProductDetailPage />} />
-            <Route path='/login' element={<LoginPage />} />
-            <Route path='/register' element={<RegisterPage />} />
-            <Route path='/forgot-password' element={<ForgotPasswordPage />} />
-            <Route path='/reset-password' element={<PasswordRestPage />} />
-            <Route path='/verify-email' element={<VerifyEmailPage />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path='/account' element={<AccountPage />} />
-              <Route path='/change-password' element={<ChangePasswordPage />} />
-              <Route path='/cart' element={<PlaceholderPage title="Your shopping cart" />} />
-              <Route path='/checkout' element={<PlaceholderPage title="checkout" />} />
-              <Route path='/orders' element={<PlaceholderPage title="Your orders" />} />
+        <CartProvider>
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path='/' element={<HomePage />} />
+              <Route path='/products' element={<ProductPage />} />
+              <Route path='/products/:slug' element={<ProductDetailPage />} />
+              <Route path='/login' element={<LoginPage />} />
+              <Route path='/register' element={<RegisterPage />} />
+              <Route path='/forgot-password' element={<ForgotPasswordPage />} />
+              <Route path='/reset-password' element={<PasswordRestPage />} />
+              <Route path='/verify-email' element={<VerifyEmailPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path='/account' element={<AccountPage />} />
+                <Route path='/change-password' element={<ChangePasswordPage />} />
+                <Route path='/cart' element={<CartPage />} />
+                <Route path='/checkout' element={<PlaceholderPage title="checkout" />} />
+                <Route path='/orders' element={<PlaceholderPage title="Your orders" />} />
+              </Route>
+              <Route path='*' element={<NotFoundPage />} />
             </Route>
-            <Route path='*' element={<NotFoundPage />} />
-          </Route>
-        </Routes>
+          </Routes>
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   )

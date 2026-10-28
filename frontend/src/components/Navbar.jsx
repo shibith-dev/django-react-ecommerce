@@ -1,16 +1,19 @@
 import React from 'react'
 import { Link, NavLink, replace, useNavigate } from "react-router-dom";
-import { LogOut, Search, ShoppingBag, UserRound } from "lucide-react";
+import { Loader2, LogOut, Search, ShoppingBag, UserRound } from "lucide-react";
 
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/cartContext';
 
 const navigationLinkClass = ({ isActive }) => {
     `transition-colors hover:text-black ${isActive ? "text-black" : "text-stone-500"}`
 }
 
 const Navbar = () => {
-    const { isAuthenticated, authLoading, logout } = useAuth()
+    const { isAuthenticated, authloading, logout } = useAuth()
     const navigate = useNavigate()
+
+    const { itemCount } = useCart()
 
     async function handleLogout(params) {
         try {
@@ -29,15 +32,22 @@ const Navbar = () => {
                 </nav>
                 <div className='flex items-center gap-4'>
                     <Link to="/products" className='text-stone-600 transition-colors hover:text-black'><Search size={19} strokeWidth={1.7} /></Link>
-                    {!authLoading && isAuthenticated ? (
+                    {!authloading && isAuthenticated ? (
                         <>
                             <Link to="/account" title="My account" className="text-stone-600 transition-colors hover:text-black"><UserRound size={19} strokeWidth={1.7} /></Link>
                             <button type="button" onClick={handleLogout} title="Sign out" className="text-stone-600 transition-colors hover:text-black">
                                 <LogOut size={19} strokeWidth={1.7} />
                             </button>
                         </>
-                    ) : (<Link to="/login" className='text-stone-600 transition-colors hover:text-black'><UserRound size={19} strokeWidth={1.7} /></Link>)}
-                    <Link to="/cart" className='text-stone-600 transition-colors hover:text-black'><ShoppingBag size={19} strokeWidth={1.7} /></Link>
+                    ) : authloading ? (<Loader2 size={19} className="animate-spin text-stone-600" />) : (<Link to="/login" className='text-stone-600 transition-colors hover:text-black'><UserRound size={19} strokeWidth={1.7} /></Link>)}
+                    <Link to="/cart" className='relative text-stone-600 transition-colors hover:text-black'>
+                        <ShoppingBag size={19} strokeWidth={1.7} />
+                        {itemCount > 0 && (
+                            <span className="absolute -right-2.5 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-900 px-1 text-[10px] font-medium leading-none text-white">
+                                {itemCount > 99 ? "99+" : itemCount}
+                            </span>
+                        )}
+                    </Link>
                 </div>
             </div>
 

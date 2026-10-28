@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Minus, Plus, ShoppingBag } from 'lucide-react'
 
 import { getProductBySlug } from '../services/productService'
+import { useAuth } from '../context/AuthContext'
+import { useCart } from '../context/cartContext'
 
 function formatPrice(price) {
     return new Intl.NumberFormat("en-IN", {
@@ -29,7 +31,15 @@ const ProductDetailPage = () => {
     const [quantity, setQuantity] = useState(1)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
+
+    const navigate = useNavigate()
+    const { isAuthenticated, authLoading } = useAuth()
+    const { addItem } = useCart()
+
+    const [addingToCart, setAddingToCart] = useState(true)
     const [cartMessage, setCartMessage] = useState("")
+    const [cartError, setCartError] = useState("")
+
 
     useEffect(() => {
         let active = true
@@ -94,11 +104,40 @@ const ProductDetailPage = () => {
     const available = product.is_active && stock > 0
 
 
-    function handleAddToCart() {
-        // Cart API integration is implemented in Phase 9.7.
-        setCartMessage(
-            "coming soon....",
-        );
+    async function handleAddToCart() {
+        setCartMessage("")
+        setCartError("")
+
+        if (authLoading) {
+            return
+        }
+
+        if (!isAuthenticated) {
+            navigate("/login", { state: { from: `/products/${slug}` } })
+            return
+        }
+
+        if (!product || product.stock < 1) {
+            setCartError("This watch is currently out of stock")
+            return
+        }
+
+        if (quantity > product.stock) {
+            setCartError(`Only ${product.stock} units are currently available.`)
+            return
+        }
+
+        setAddingToCart(true)
+
+        try {
+            await addItem(product.id, quantity)
+            setCartMessage("Added to your shopping cart.")
+        } catch (err) {
+            const data = err?.response?.data
+            setCartError(data?.detail || data?.quantity || "Unable to add this watch. Please try again.")
+        } finally {
+            setAddingToCart(false)
+        }
     }
 
     return (
@@ -168,7 +207,14 @@ const ProductDetailPage = () => {
                         </button>
 
                         {cartMessage && (
-                            <p role='status' className='mt-3 text-sm text-stone-600'>{cartMessage}</p>
+                            <p role='status' className='mt-3 text-sm text-stone-600'>
+                                {cartMessage} {" "}
+                                <Link to="/cart" className='text-black font-medium'>view cart</Link>
+                            </p>
+                        )}
+
+                        {cartError && (
+                            <p role="alert" className="mt-3 text-sm text-red-700">{cartError}</p>
                         )}
                     </div>
 
@@ -182,7 +228,7 @@ const ProductDetailPage = () => {
                             <Specification label="Strap material" value={product.strap_material} />
                             <Specification label="Dial color" value={product.dial_color} />
                             <Specification label="Case color" value={product.case_color} />
-                            <Specification label="Strap color" value={product.strap_color}/>
+                            <Specification label="Strap color" value={product.strap_color} />
                             <Specification
                                 label="Case diameter"
                                 value={

@@ -25,7 +25,8 @@ class CartView(APIView):
 
     def get(self, request):
         cart, _ = get_cart_queryset().get_or_create(user=request.user)
-        return Response(CartSerializer(cart).data, status=status.HTTP_200_OK)
+        serializer = CartSerializer(cart, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CartItemListCreateView(APIView):
@@ -58,7 +59,9 @@ class CartItemListCreateView(APIView):
 
         cart = get_cart_queryset().get(id = cart.id)
 
-        return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
+        serializer = CartSerializer(cart, context={"request": request})
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CartItemDetailView(APIView):
@@ -80,7 +83,9 @@ class CartItemDetailView(APIView):
 
         cart = get_cart_queryset().get(id=cart.id)
 
-        return Response(CartSerializer(cart).data)
+        serializer = CartSerializer(cart, context={"request": request})
+
+        return Response(serializer.data)
 
     def delete(self, request, item_id):
         cart = get_user_cart(request.user)
