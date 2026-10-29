@@ -14,8 +14,11 @@ import ChangePasswordPage from './pages/ChangePasswordPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import PasswordRestPage from './pages/PasswordResetPage'
 import ProtectedRoute from './components/ProtectedRoute'
-import { CartProvider } from './context/cartContext'
+
 import CartPage from './pages/CartPage'
+import { CartProvider } from './context/CartContext'
+import CheckoutPage from './pages/CheckoutPage'
+import OrderConfirmationPage from './pages/OrderConfirmationPage'
 
 function PlaceholderPage({ title }) {
   return (
@@ -46,7 +49,8 @@ function App() {
                 <Route path='/account' element={<AccountPage />} />
                 <Route path='/change-password' element={<ChangePasswordPage />} />
                 <Route path='/cart' element={<CartPage />} />
-                <Route path='/checkout' element={<PlaceholderPage title="checkout" />} />
+                <Route path='/checkout' element={<CheckoutPage />} />
+                <Route path='/checkout/success/:orderId' element={<OrderConfirmationPage />} />
                 <Route path='/orders' element={<PlaceholderPage title="Your orders" />} />
               </Route>
               <Route path='*' element={<NotFoundPage />} />

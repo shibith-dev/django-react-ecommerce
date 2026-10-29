@@ -3,7 +3,7 @@ import { Link, NavLink, replace, useNavigate } from "react-router-dom";
 import { Loader2, LogOut, Search, ShoppingBag, UserRound } from "lucide-react";
 
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/cartContext';
+import { useCart } from '../context/CartContext';
 
 const navigationLinkClass = ({ isActive }) => {
     `transition-colors hover:text-black ${isActive ? "text-black" : "text-stone-500"}`

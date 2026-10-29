@@ -4,7 +4,7 @@ import { ArrowLeft, Minus, Plus, ShoppingBag } from 'lucide-react'
 
 import { getProductBySlug } from '../services/productService'
 import { useAuth } from '../context/AuthContext'
-import { useCart } from '../context/cartContext'
+import { useCart } from '../context/CartContext'
 
 function formatPrice(price) {
     return new Intl.NumberFormat("en-IN", {
@@ -36,7 +36,7 @@ const ProductDetailPage = () => {
     const { isAuthenticated, authLoading } = useAuth()
     const { addItem } = useCart()
 
-    const [addingToCart, setAddingToCart] = useState(true)
+    const [addingToCart, setAddingToCart] = useState(false)
     const [cartMessage, setCartMessage] = useState("")
     const [cartError, setCartError] = useState("")
 
@@ -202,8 +202,8 @@ const ProductDetailPage = () => {
                                 {available ? `${stock} available` : "No stock available"}
                             </p>
                         </div>
-                        <button type='button' disabled={!available} onClick={handleAddToCart} className='mt-5 flex w-full items-center justify-center gap-3 bg-[#25241f] px-6 py-4 text-sm text-white transition-colors hover:bg-stone-700 disabled:cursor-not-allowed disabled:bg-stone-300'>
-                            <ShoppingBag size={18} /> {available ? "Add to cart" : "Out of stock"}
+                        <button type='button' disabled={!available || addingToCart} onClick={handleAddToCart} className='mt-5 flex w-full items-center justify-center gap-3 bg-[#25241f] px-6 py-4 text-sm text-white transition-colors hover:bg-stone-700 disabled:cursor-not-allowed disabled:bg-stone-300'>
+                            <ShoppingBag size={18} /> {addingToCart? "Adding to cart" : available ? "Add to cart" : "Out of stock"}
                         </button>
 
                         {cartMessage && (
