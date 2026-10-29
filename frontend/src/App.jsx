@@ -19,6 +19,8 @@ import CartPage from './pages/CartPage'
 import { CartProvider } from './context/CartContext'
 import CheckoutPage from './pages/CheckoutPage'
 import OrderConfirmationPage from './pages/OrderConfirmationPage'
+import OrdersPage from './pages/OrdersPage'
+import OrderDetailPage from './pages/OrderDetailPage'
 
 function PlaceholderPage({ title }) {
   return (
@@ -51,7 +53,8 @@ function App() {
                 <Route path='/cart' element={<CartPage />} />
                 <Route path='/checkout' element={<CheckoutPage />} />
                 <Route path='/checkout/success/:orderId' element={<OrderConfirmationPage />} />
-                <Route path='/orders' element={<PlaceholderPage title="Your orders" />} />
+                <Route path='/orders' element={<OrdersPage />} />
+                <Route path='/orders/:orderId' element={<OrderDetailPage />} />
               </Route>
               <Route path='*' element={<NotFoundPage />} />
             </Route>
