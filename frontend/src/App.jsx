@@ -21,6 +21,7 @@ import CheckoutPage from './pages/CheckoutPage'
 import OrderConfirmationPage from './pages/OrderConfirmationPage'
 import OrdersPage from './pages/OrdersPage'
 import OrderDetailPage from './pages/OrderDetailPage'
+import GuestRoute from './components/GuestRoute'
 
 function PlaceholderPage({ title }) {
   return (
@@ -42,8 +43,10 @@ function App() {
               <Route path='/' element={<HomePage />} />
               <Route path='/products' element={<ProductPage />} />
               <Route path='/products/:slug' element={<ProductDetailPage />} />
-              <Route path='/login' element={<LoginPage />} />
-              <Route path='/register' element={<RegisterPage />} />
+              <Route element={<GuestRoute />}>
+                <Route path='/login' element={<LoginPage />} />
+                <Route path='/register' element={<RegisterPage />} />
+              </Route>
               <Route path='/forgot-password' element={<ForgotPasswordPage />} />
               <Route path='/reset-password' element={<PasswordRestPage />} />
               <Route path='/verify-email' element={<VerifyEmailPage />} />

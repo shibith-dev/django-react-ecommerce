@@ -10,7 +10,7 @@ const inputClass = "mt-2 w-full border border-stone-300 bg-white px-4 py-3 text-
 
 const LoginPage = () => {
 
-    const { login, isAuthenticated, authloading  } = useAuth()
+    const { login } = useAuth()
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -36,17 +36,6 @@ const LoginPage = () => {
         } finally {
             setSubmitting(false)
         }
-    }
-
-    useEffect(() => {
-        if (isAuthenticated) {
-            const destination = location.state?.from || "/"
-            navigate(destination, { replace: true })
-        }
-    }, [isAuthenticated])
-
-    if (authloading) {
-        return 
     }
 
     return (
