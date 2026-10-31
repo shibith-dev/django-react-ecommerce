@@ -26,6 +26,12 @@ from .tasks import send_verification_email, send_password_reset_email
 
 User = get_user_model()
 
+def demo_mode_blocked():
+    return Response(
+        {"detail": "This feature is unavailable in demo mode."},
+        status=status.HTTP_403_FORBIDDEN,
+    )
+
 
 def set_fresh_cookie(response, token):
     response.set_cookie(
@@ -53,13 +59,15 @@ class RegisterUserView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        if settings.DEMO_MODE:
+            return demo_mode_blocked()
+
         serializer = RegisterationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        transaction.on_commit(
-            lambda: send_verification_email.delay(user.id)
-        )
+        if settings.ENABLE_EMAIL_TASKS:
+            transaction.on_commit(lambda: send_verification_email.delay(user.id))
 
         user_data = UserSerializer(user).data
         return Response(
@@ -147,6 +155,9 @@ class ChangePassword(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        if settings.DEMO_MODE:
+            return demo_mode_blocked()
+        
         serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         request.user.set_password(serializer.validated_data["new_password"])
@@ -165,6 +176,9 @@ class verifyEmailView(APIView):
     permission_classes=[permissions.AllowAny]
 
     def post(self, request):
+        if settings.DEMO_MODE:
+            return demo_mode_blocked()
+        
         serializer = VerificationEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.user
@@ -182,6 +196,9 @@ class ResendVerificationView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        if settings.DEMO_MODE:
+            return demo_mode_blocked()
+        
         serializer = ResendVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -189,7 +206,7 @@ class ResendVerificationView(APIView):
 
         user = User.objects.filter(email__iexact=email, is_active=True, email_verified=False).first()
 
-        if user:
+        if user and settings.ENABLE_EMAIL_TASKS:
             transaction.on_commit(lambda: send_verification_email.delay(user.id))
 
         return Response(
@@ -202,6 +219,9 @@ class ForgotPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        if settings.DEMO_MODE:
+            return demo_mode_blocked()
+
         serializer = ForgotPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -209,7 +229,7 @@ class ForgotPasswordView(APIView):
 
         user = User.objects.filter(email__iexact=email, is_active=True).first()
 
-        if user:
+        if user and settings.ENABLE_EMAIL_TASKS:
             transaction.on_commit(lambda: send_password_reset_email.delay(user.id))
 
         return Response(
@@ -227,6 +247,9 @@ class ResetPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        if settings.DEMO_MODE:
+            return demo_mode_blocked()
+        
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

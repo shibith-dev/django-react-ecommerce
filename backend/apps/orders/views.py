@@ -97,7 +97,8 @@ class OrderListCreateView(generics.ListCreateAPIView):
 
                 CartItem.objects.filter(cart=cart).delete()
 
-                transaction.on_commit(lambda order_id=order.id: send_order_confirmation_email.delay(order_id))
+                if settings.ENABLE_EMAIL_TASKS:
+                    transaction.on_commit(lambda order_id=order.id: send_order_confirmation_email.delay(order_id))
 
         order = get_order_queryset().get(pk=order.pk)
         return Response(

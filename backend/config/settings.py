@@ -192,7 +192,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Celery 
-CELERY_BROKER_URL = os.environ.get("REDIS_URL")
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 CELERY_TASK_IGNORE_RESULT = True
 
 # Email
@@ -227,3 +227,7 @@ AUTH_REFRESH_COOKIE_HTTPONLY = True # prevents JavaScript from reading the refre
 AUTH_REFRESH_COOKIE_SECURE = not DEBUG
 AUTH_REFRESH_COOKIE_SAMESITE = "Lax"
 AUTH_REFRESH_COOKIE_PATH = "/api/v1/auth/" # limits the refresh cookie to the authentication API path rather than sending it with every request.
+
+DEMO_MODE = os.environ.get("DEMO_MODE", "False").lower() in ("true", "1", "yes")
+ENABLE_EMAIL_TASKS = os.environ.get("ENABLE_EMAIL_TASKS", "True").lower() in ("true", "1", "yes")
+DEMO_USER_EMAIL = os.environ.get("DEMO_USER_EMAIL", "demo@chrono.example")

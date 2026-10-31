@@ -5,6 +5,8 @@ import AuthPageLayout from '../layouts/AuthPageLayout';
 
 import { useAuth } from '../context/AuthContext'
 
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true"
+
 const inputClass = "mt-2 w-full border border-stone-300 bg-white px-4 py-3 text-sm outline-none focus:border-stone-700";
 
 
@@ -43,6 +45,17 @@ const LoginPage = () => {
             {infoMessage && (
                 <p role="status" className="text-sm text-green-700">{infoMessage}</p>
             )}
+            {isDemoMode && (
+                <div className='mb-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4'>
+                    <p className='text-sm font-semibold text-neutral-900'>Explore the chrono demo</p>
+                    <p className='mt-2 text-sm text-neutral-600'>
+                        Use the demo account to explore products, manage your cart, and place sample orders.
+                    </p>
+                    <p className='mt-3 text-sm text-neutral-700'>Email: demo@gmail.com</p>
+                    <p className='mt-3 text-sm text-neutral-700'>Password: Chrono1234</p>
+
+                </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-5">
                 {error && (
                     <p
@@ -60,11 +73,13 @@ const LoginPage = () => {
                 <label className="block text-sm font-medium">Password
                     <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} placeholder="Enter your password" />
                 </label>
-                <div className="flex justify-end">
-                    <Link to="/forgot-password" className="text-sm text-stone-600 underline hover:text-black">
-                        Forgot password?
-                    </Link>
-                </div>
+                {!isDemoMode && (
+                    <div className="flex justify-end">
+                        <Link to="/forgot-password" className="text-sm text-stone-600 underline hover:text-black">
+                            Forgot password?
+                        </Link>
+                    </div>
+                )}
 
                 <button type="submit" disabled={submitting} className="w-full bg-[#25241f] px-5 py-3.5 text-sm text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-60">
                     {submitting ? "Signing in..." : "Sign in"}
@@ -72,7 +87,9 @@ const LoginPage = () => {
 
                 <p className="text-center text-sm text-stone-600">
                     Don't have an account?{" "}
-                    <Link to="/register" className="font-medium text-black underline">Create one</Link>
+                    {!isDemoMode && (
+                        <Link to="/register" className="font-medium text-black underline">Create one</Link>
+                    )}
                 </p>
             </form>
         </AuthPageLayout>
