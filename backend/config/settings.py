@@ -253,3 +253,14 @@ AUTH_REFRESH_COOKIE_PATH = "/api/v1/auth/" # limits the refresh cookie to the au
 DEMO_MODE = os.environ.get("DEMO_MODE", "False").lower() in ("true", "1", "yes")
 ENABLE_EMAIL_TASKS = os.environ.get("ENABLE_EMAIL_TASKS", "True").lower() in ("true", "1", "yes")
 DEMO_USER_EMAIL = os.environ.get("DEMO_USER_EMAIL", "demo@chrono.example")
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = (
+        "HTTP_X_FORWARDED_PROTO",
+        "https",
+    )
+
+    SECURE_SSL_REDIRECT = True
+
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
