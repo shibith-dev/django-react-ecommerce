@@ -1,5 +1,24 @@
 
 services:
+  combined:
+    build:
+      context: .
+      dockerfile: Dockerfile.combined
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8001:8000"
+    volumes:
+      - media_data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
   db:
     image: postgres:17
     restart: unless-stopped

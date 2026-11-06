@@ -36,7 +36,7 @@ def send_verification_email(self, user_id):
 
     subject = "verify your chrono account"
     message = (
-        f"Hello {user.first_name or "there"},\n\n"
+        f"Hello {user.first_name or 'there'},\n\n"
         "Thanks for registering with chrono.\nVerify your email address using this link:\n\n"
         f"{verification_url}\n\n"
         "This link expires in 24 hours. If you did not create this account, ignore this email."

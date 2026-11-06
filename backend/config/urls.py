@@ -15,16 +15,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import frontend_view
 
 urlpatterns = [
+    # admin
     path('admin/', admin.site.urls),
+
+    # Backend API
     path('api/v1/auth/', include('accounts.urls')),
     path('api/v1/', include('apps.catalog.urls')),
     path('api/v1/cart/', include("apps.cart.urls")),
-    path('api/v1/orders/', include("apps.orders.urls"))
+    path('api/v1/orders/', include("apps.orders.urls")),
+
+    # React frontend 
+    re_path(r'^(?!api/|admin/|static/|media/).*$', frontend_view)
 ]
 
 if settings.DEBUG:
